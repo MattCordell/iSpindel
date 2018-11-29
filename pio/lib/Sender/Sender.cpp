@@ -10,6 +10,7 @@
 #include <PubSubClient.h>
 
 #define UBISERVER "things.ubidots.com"
+#define BREWERSFRIENDSERVER "log.brewersfriend.com"
 #define CONNTIMEOUT 2000
 
 SenderClass::SenderClass()
@@ -202,7 +203,7 @@ bool SenderClass::sendInfluxDB(String server, uint16_t port, String db, String n
 bool SenderClass::sendPrometheus(String server, uint16_t port, String job, String instance)
 {
     HTTPClient http;
-    
+
     // the path looks like /metrics/job/<JOBNAME>[/instance/<INSTANCENAME>]
     String uri = "/metrics/job/";
     uri += job;
@@ -370,6 +371,47 @@ bool SenderClass::sendTCONTROL(String server, uint16_t port)
         msg.remove(msg.length() - 1);
 
         _client.println(msg);
+        CONSOLELN(msg);
+    }
+    else
+    {
+        CONSOLELN(F("\nERROR Sender: couldnt connect"));
+    }
+
+    int timeout = 0;
+    while (!_client.available() && timeout < CONNTIMEOUT)
+    {
+        timeout++;
+        delay(1);
+    }
+    while (_client.available())
+    {
+        char c = _client.read();
+        Serial.write(c);
+    }
+    // currentValue = 0;
+    _client.stop();
+    delay(100); // allow gracefull session close
+    return true;
+}
+
+bool SenderClass::sendBrewersfriend(String token, String name)
+{
+    _jsonVariant.printTo(Serial);
+
+    if (_client.connect(BREWERSFRIENDSERVER, 80))
+    {
+        CONSOLELN(F("\nSender: Brewersfriend posting"));
+
+        String msg = F("POST /ispindel/");
+        msg += token;
+        msg += F(" HTTP/1.1\r\nHost: log.brewersfriend.com\r\nUser-Agent: ESP8266\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: ");
+        msg += _jsonVariant.measureLength();
+        msg += "\r\n";
+
+        _client.println(msg);
+        _jsonVariant.printTo(_client);
+        _client.println();
         CONSOLELN(msg);
     }
     else

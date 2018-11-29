@@ -159,6 +159,17 @@ case "MQTT":
   set('url',0);
   set('job',0);
   set('instance',0);
+  break;
+case "Brewersfriend":
+	set('token',1);
+	set('server',0);
+	set('url',0);
+  set('port',0);
+  set('db', 0);
+  set('username', 0);
+  set('password', 0);
+  set('job',0);
+  set('instance',0);
 }};
 window.onload = function(e){
  for (var i = 0; i < labels.length; i++) {
@@ -181,6 +192,7 @@ const char HTTP_API_LIST[] PROGMEM = R"V0G0N(
 <option value=8>InfluxDB</option>
 <option value=9>Prometheus</option>
 <option value=10>MQTT</option>
+<option value=11>Brewersfriend</option>
 </select>)V0G0N";
 
 const char HTTP_TEMPSCALE_LIST[] PROGMEM = R"V0G0N(
